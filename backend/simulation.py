@@ -60,6 +60,7 @@ class Simulation:
     def _create_drones(self):
         """Create drones based on configuration"""
         drone_id = 0
+        security_sphere = self.config.avoidance.detection_radius
 
         for drone_config in self.config.drones:
             for i in range(drone_config.count):
@@ -77,6 +78,7 @@ class Simulation:
                     max_speed=drone_config.max_speed,
                     max_acceleration=drone_config.max_acceleration,
                     size=drone_config.size,
+                    security_sphere_size=security_sphere,
                     gif_path=drone_config.gif_path,
                     color=tuple(drone_config.color) if drone_config.color else None
                 )

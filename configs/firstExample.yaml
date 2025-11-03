@@ -25,15 +25,13 @@ drones:
     route_params:
       positions:
         - [ 10, 10, 10 ]
-        - [ 15, 15, 15 ]
-        - [ 15, 10, 15 ]
-        - [ 15, 10, 10 ]
-        - [ 10, 10, 10 ]
+        - [ 19, 19, 19 ]
       tolerance: 0.8
       loop: true
+
   - count: 1
     initial_positions:
-      - [ 15, 15, 15 ]
+      - [ 19, 19, 19 ]
     max_speed: 5.0
     max_acceleration: 2.0
     size: 0.8
@@ -42,10 +40,8 @@ drones:
     route_type: "waypoints"
     route_params:
       positions:
-        - [ 5, 5, 5 ]
-        - [ 5, 10, 10 ]
-        - [ 5, 5, 10 ]
-        - [ 5, 5, 5 ]
+        - [ 10, 10, 10 ]
+        - [ 1, 1, 1 ]
       tolerance: 0.8
       loop: true
 
@@ -57,10 +53,10 @@ flight_model:
     approach_distance: 2.0
 
 avoidance:
-  type: "right"
-  detection_radius: 3.0
+  type: "repulsive"
+  detection_radius: 4.0
   params:
-    avoidance_strength: 1.0
+    repulsion_strength: 2.5
 
 visualization:
   show_trajectories: true

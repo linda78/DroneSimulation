@@ -63,6 +63,7 @@ class DroneViewer:
 
         # Visual elements
         self.drone_visuals = []
+        self.drone_sphere_visuals = []
         self.trajectory_visuals = []
         self.room_visual = None
 
@@ -109,11 +110,21 @@ class DroneViewer:
             # Create sphere for drone body
             drone_visual = scene.visuals.Sphere(
                 radius=drone.size,
-                color=drone.color + (0.8,),  # Add alpha
-                parent=self.view.scene
+                parent=self.view.scene,
+                color=drone.color  + (0.8,)
             )
             drone_visual.transform = scene.STTransform(translate=drone.state.position)
             self.drone_visuals.append(drone_visual)
+
+            drone_sphere = scene.visuals.Sphere(
+                radius=drone.security_sphere_size / 2,
+                method='latitude',
+                parent=self.view.scene,
+                edge_color=drone.color + (0.5,),
+                color=drone.color + (0.005,)
+            )
+            drone_sphere.transform = scene.STTransform(translate=drone.state.position)
+            self.drone_sphere_visuals.append(drone_sphere)
 
             # Create line for trajectory
             if self.simulation.config.show_trajectories:
@@ -150,6 +161,7 @@ class DroneViewer:
         # Update drone visuals
         for i, drone in enumerate(self.simulation.drones):
             # Update position
+            self.drone_sphere_visuals[i].transform = scene.STTransform(translate=drone.state.position)
             self.drone_visuals[i].transform = scene.STTransform(translate=drone.state.position)
 
             # Update trajectory

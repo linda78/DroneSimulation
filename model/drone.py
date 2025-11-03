@@ -37,6 +37,7 @@ class Drone:
         max_speed: float = 5.0,
         max_acceleration: float = 2.0,
         size: float = 0.3,
+        security_sphere_size: Optional[float] = None,
         gif_path: Optional[str] = None,
         color: Optional[tuple] = None
     ):
@@ -57,6 +58,7 @@ class Drone:
         self.max_speed = max_speed
         self.max_acceleration = max_acceleration
         self.size = size
+        self.security_sphere_size = security_sphere_size
         self.gif_path = gif_path
         self.color = color if color else self._generate_color()
 
