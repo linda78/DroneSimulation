@@ -13,6 +13,21 @@ import time
 from backend import Simulation
 
 
+def helper_create_room(dims) -> np.array:
+    # Create wireframe box for room bounds (edges only, no faces)
+    # Define the 8 corners of the box
+    corners = np.array([
+        [0, 0, 0], [dims[0], 0, 0], [dims[0], dims[1], 0], [0, dims[1], 0],
+        [0, 0, dims[2]], [dims[0], 0, dims[2]], [dims[0], dims[1], dims[2]], [0, dims[1], dims[2]]
+    ])
+    # Define and return the 12 edges connecting the corners
+    return np.array([
+        [corners[0], corners[1]], [corners[1], corners[2]], [corners[2], corners[3]], [corners[3], corners[0]],
+        [corners[4], corners[5]], [corners[5], corners[6]], [corners[6], corners[7]], [corners[7], corners[4]],
+        [corners[0], corners[4]], [corners[1], corners[5]], [corners[2], corners[6]], [corners[3], corners[7]]
+    ])
+
+
 class DroneViewer:
     """
     3D viewer for drone simulation using VisPy
@@ -40,7 +55,7 @@ class DroneViewer:
         self.view = self.canvas.central_widget.add_view()
         self.view.camera = 'turntable'
         self.view.camera.fov = 60
-        self.view.camera.distance = 0
+        self.view.camera.distance = 30
 
         # Center camera on room
         room_center = simulation.room.dimensions / 2
@@ -67,16 +82,10 @@ class DroneViewer:
         """Create room visualization"""
         dims = self.simulation.room.dimensions
 
-        # Create wireframe box for room bounds
-        box = scene.visuals.Box(
-            width=dims[0],
-            height=dims[1],
-            depth=dims[2],
-            color=(0.5, 0.5, 0.5, 0.2),
-            edge_color='white',
-            parent=self.view.scene
-        )
-        box.transform = scene.STTransform(translate=dims / 2)
+        edges = helper_create_room(dims)
+        # Draw each edge
+        for edge in edges:
+            line = scene.visuals.Line(pos=edge, color='white', width=2, parent=self.view.scene)
 
         # Create ground plane
         ground_size = max(dims[0], dims[1])
@@ -230,14 +239,9 @@ class HeadlessRenderer:
         # Create scene (simplified version)
         dims = self.simulation.room.dimensions
 
-        # Room box
-        box = scene.visuals.Box(
-            width=dims[0], height=dims[1], depth=dims[2],
-            color=(0.5, 0.5, 0.5, 0.2),
-            edge_color='white',
-            parent=view.scene
-        )
-        box.transform = scene.STTransform(translate=dims / 2)
+        edges = helper_create_room(dims)
+        for edge in edges:
+            scene.visuals.Line(pos=edge, color='white', width=2, parent=view.scene)
 
         # Drones
         for drone in self.simulation.drones:
