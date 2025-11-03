@@ -1,0 +1,49 @@
+# Stress Test Configuration
+# 20 drones with advanced collision avoidance
+
+simulation:
+  name: "Stress Test - 20 Drones"
+  duration: 90.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [40.0, 40.0, 20.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  # Many drones with random circular routes
+  - count: 20
+    max_speed: 5.0
+    max_acceleration: 2.5
+    size: 0.3
+    route_type: "circular"
+    route_params:
+      center: [20, 20, 0]
+      radius: 12.0
+      height: 10.0
+      num_points: 12
+
+flight_model:
+  type: "physical"
+  params:
+    drag_coefficient: 0.1
+    approach_distance: 2.0
+
+avoidance:
+  type: "velocity_obstacle"
+  detection_radius: 5.0
+  params:
+    time_horizon: 3.0
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 30
+  camera_follow: null
+
+export:
+  video: false
+  data: true
+  video_fps: 30
+  output_dir: "output/stress_test"

@@ -1,0 +1,48 @@
+# Camera Follow Configuration
+# Camera follows drone 0
+
+simulation:
+  name: "Camera Follow Demo"
+  duration: 45.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [25.0, 25.0, 12.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  - count: 5
+    max_speed: 4.5
+    max_acceleration: 2.0
+    size: 0.3
+    route_type: "circular"
+    route_params:
+      center: [12.5, 12.5, 0]
+      radius: 8.0
+      height: 6.0
+      num_points: 10
+
+flight_model:
+  type: "physical"
+  params:
+    drag_coefficient: 0.12
+    approach_distance: 2.0
+
+avoidance:
+  type: "right"
+  detection_radius: 3.5
+  params:
+    avoidance_strength: 1.2
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 80
+  camera_follow: 0  # Follow drone with ID 0
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output/camera_follow"

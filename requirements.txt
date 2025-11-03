@@ -1,0 +1,17 @@
+numpy==1.24.3
+torch>=2.0.1
+simpy>=4.0.2
+Pillow>=10.0.0
+PyYAML>=6.0.1
+matplotlib>=3.7.1
+opencv-python>=4.8.0.76
+vispy>=0.13.0
+PyQt5>=5.15.9
+flask>=3.0.0
+flask-restful>=0.3.10
+flask-cors>=4.0.0
+sqlalchemy>=2.0.23
+pandas>=2.0.3
+plotly>=5.17.0
+scipy>=1.11.3
+pybind11>=2.12

@@ -1,0 +1,55 @@
+# Simple Demo Configuration
+# 3 drones flying in circular patterns
+
+simulation:
+  name: "Simple Demo"
+  duration: 60.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [20.0, 20.0, 10.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  - count: 3
+    initial_positions:
+      - [10, 10, 3]
+      - [10, 10, 5]
+      - [10, 10, 7]
+    max_speed: 5.0
+    max_acceleration: 2.0
+    size: 0.3
+    gif_path: null
+    color: null
+    route_type: "circular"
+    route_params:
+      center: [10, 10, 0]
+      radius: 6.0
+      height: 5.0
+      num_points: 8
+
+flight_model:
+  type: "physical"
+  gif_path: null
+  params:
+    drag_coefficient: 0.1
+    approach_distance: 2.0
+
+avoidance:
+  type: "right"
+  detection_radius: 3.0
+  params:
+    avoidance_strength: 1.0
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 50
+  camera_follow: null
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output"

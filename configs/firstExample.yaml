@@ -1,0 +1,74 @@
+# Simple Demo Configuration
+# 3 drones flying from side to side
+
+simulation:
+  name: "First real example"
+  duration: 60.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [20.0, 20.0, 20.0]
+  texture_path: null
+  is_video: true
+
+drones:
+  - count: 1
+    initial_positions:
+      - [1, 1, 1]
+    max_speed: 5.0
+    max_acceleration: 2.0
+    size: 0.8
+    gif_path: "assets/drones/drone2.gif"
+    color: [1.0, 0.2, 0.2]  # Red
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [ 10, 10, 10 ]
+        - [ 15, 15, 15 ]
+        - [ 15, 10, 15 ]
+        - [ 15, 10, 10 ]
+        - [ 10, 10, 10 ]
+      tolerance: 0.8
+      loop: true
+  - count: 1
+    initial_positions:
+      - [ 15, 15, 15 ]
+    max_speed: 5.0
+    max_acceleration: 2.0
+    size: 0.8
+    gif_path: "assets/drones/drone2.gif"
+    color: [0.2, 0.2, 1.0]  # Blue
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [ 5, 5, 5 ]
+        - [ 5, 10, 10 ]
+        - [ 5, 5, 10 ]
+        - [ 5, 5, 5 ]
+      tolerance: 0.8
+      loop: true
+
+flight_model:
+  type: "physical"
+  gif_path: "assets/drones/drone2.gif"
+  params:
+    drag_coefficient: 0.1
+    approach_distance: 2.0
+
+avoidance:
+  type: "right"
+  detection_radius: 3.0
+  params:
+    avoidance_strength: 1.0
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 50
+  camera_follow: null
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output"

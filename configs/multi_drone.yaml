@@ -1,0 +1,86 @@
+# Multi-Drone Configuration
+# 8 drones with different routes and speeds
+
+simulation:
+  name: "Multi Drone Demo"
+  duration: 120.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [30.0, 30.0, 15.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  # Fast circular group
+  - count: 3
+    initial_positions:
+      - [8, 15, 5]
+      - [10, 15, 5]
+      - [12, 15, 5]
+    max_speed: 6.0
+    max_acceleration: 3.0
+    size: 0.3
+    color: [1.0, 0.2, 0.2]  # Red
+    route_type: "circular"
+    route_params:
+      center: [10, 15, 0]
+      radius: 5.0
+      height: 5.0
+      num_points: 8
+
+  # Slow rectangular group
+  - count: 3
+    initial_positions:
+      - [20, 15, 8]
+      - [20, 15, 10]
+      - [20, 15, 12]
+    max_speed: 3.0
+    max_acceleration: 1.5
+    size: 0.4
+    color: [0.2, 0.2, 1.0]  # Blue
+    route_type: "rectangular"
+    route_params:
+      corner1: [16, 10, 0]
+      corner2: [26, 20, 0]
+      height: 10.0
+
+  # Custom waypoint group
+  - count: 2
+    max_speed: 4.0
+    max_acceleration: 2.0
+    size: 0.35
+    color: [0.2, 1.0, 0.2]  # Green
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 5, 3]
+        - [25, 5, 3]
+        - [25, 25, 8]
+        - [5, 25, 8]
+      tolerance: 0.8
+      loop: true
+
+flight_model:
+  type: "physical"
+  params:
+    drag_coefficient: 0.15
+    approach_distance: 2.5
+
+avoidance:
+  type: "repulsive"
+  detection_radius: 4.0
+  params:
+    repulsion_strength: 2.5
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 100
+  camera_follow: null
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output/multi_drone"
