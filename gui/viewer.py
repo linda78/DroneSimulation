@@ -2,6 +2,9 @@
 3D Visualization using VisPy
 Real-time rendering of drone simulation
 """
+import os
+import shutil
+from pathlib import Path
 
 import numpy as np
 from vispy import app, scene
@@ -78,6 +81,14 @@ class DroneViewer:
         self.last_update_time = time.time()
         self.frame_count = 0
         self.fps = 0
+    #
+    #     self.do_screenshot = False
+    #     self.image_counter = 0
+    #     self.image_path = os.path.join('output', 'simulation')
+    #     self.clear_and_create_path()
+    #
+    # def set_do_screenshot(self):
+    #     self.do_screenshot = True
 
     def _create_room(self):
         """Create room visualization"""
@@ -194,6 +205,8 @@ class DroneViewer:
 
         self.canvas.update()
 
+        # self.screenshot()
+
     def start(self):
         """Start the visualization"""
         self.timer.start()
@@ -207,11 +220,25 @@ class DroneViewer:
         self.start()
         app.run()
 
-    def screenshot(self, filename: str):
-        """Save screenshot of current view"""
-        img = self.canvas.render()
-        from PIL import Image
-        Image.fromarray(img).save(filename)
+    # def screenshot(self, filename: str = None):
+    #     """Save screenshot of current view"""
+    #     img = self.canvas.render()
+    #     if filename is None:
+    #         filename = os.path.join(self.image_path, 'screenshot{}.png'.format(self.frame_count))
+    #         self.frame_count += 1
+    #     from PIL import Image
+    #     Image.fromarray(img).save(filename)
+    #
+    # def clear_and_create_path(self):
+    #     try:
+    #         if os.path.isfile(self.image_path) or os.path.islink(self.image_path):
+    #             os.unlink(self.image_path)
+    #         elif os.path.isdir(self.image_path):
+    #             shutil.rmtree(self.image_path)
+    #     except Exception as e:
+    #         print('Failed to delete %s. Reason: %s' % (self.image_path, e))
+    #
+    #     os.mkdir(self.image_path)
 
 
 class HeadlessRenderer:

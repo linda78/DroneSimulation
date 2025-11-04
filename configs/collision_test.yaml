@@ -66,7 +66,7 @@ visualization:
   camera_follow: null
 
 export:
-  video: false
+  video: true
   data: true
   video_fps: 30
   output_dir: "output"

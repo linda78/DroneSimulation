@@ -64,9 +64,10 @@ def run_simulation(config_path: str, headless: bool = False, export_video: bool 
             exporter.export_analytics(str(output_dir))
 
         if config.export_video or export_video:
-            print(f"  Exporting video to {output_dir / 'simulation.mp4'}")
-            video_exporter = VideoExporter(simulation)
-            video_exporter.export(str(output_dir / 'simulation.mp4'), fps=config.video_fps)
+            export_path = 'output/multi_view.mp4'
+            print(f"  Exporting video to {export_path}")
+            exporter = VideoExporter(simulation, view_type="multi")
+            exporter.export(export_path)
 
     print("\nDone!")
 
