@@ -114,7 +114,7 @@ class DroneViewer:
         ground_size = max(dims[0], dims[1])
         grid = scene.visuals.GridLines(
             scale=(ground_size / 20, ground_size / 20),
-            color=(0.3, 0.3, 0.3, 0.5),
+            color=(1.0, 1.0, 1.0, 0.3),  # White with slight transparency
             parent=self.view.scene
         )
         grid.transform = scene.STTransform(
