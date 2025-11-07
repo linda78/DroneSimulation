@@ -16,6 +16,23 @@ import time
 from backend import Simulation
 
 
+def _setup_camera_view(view, room_dimensions, distance=30, fov=60):
+    """
+    Common camera setup for both interactive and headless rendering
+
+    Args:
+        view: VisPy view to configure
+        room_dimensions: Room dimensions array
+        distance: Camera distance from center
+        fov: Field of view in degrees
+    """
+    view.camera = 'turntable'
+    view.camera.fov = fov
+    view.camera.distance = distance
+    room_center = room_dimensions / 2
+    view.camera.center = tuple(room_center)
+
+
 def helper_create_room(dims) -> np.array:
     # Create wireframe box for room bounds (edges only, no faces)
     # Define the 8 corners of the box
@@ -56,13 +73,7 @@ class DroneViewer:
         )
 
         self.view = self.canvas.central_widget.add_view()
-        self.view.camera = 'turntable'
-        self.view.camera.fov = 60
-        self.view.camera.distance = 30
-
-        # Center camera on room
-        room_center = simulation.room.dimensions / 2
-        self.view.camera.center = tuple(room_center)
+        _setup_camera_view(self.view, simulation.room.dimensions)
 
         # Visual elements
         self.drone_visuals = []
@@ -268,16 +279,10 @@ class HeadlessRenderer:
         # Create temporary canvas
         canvas = scene.SceneCanvas(size=self.resolution, show=False)
         view = canvas.central_widget.add_view()
-        view.camera = 'turntable'
-        view.camera.fov = 60
-        view.camera.distance = 30
-
-        room_center = self.simulation.room.dimensions / 2
-        view.camera.center = tuple(room_center)
+        _setup_camera_view(view, self.simulation.room.dimensions)
 
         # Create scene (simplified version)
         dims = self.simulation.room.dimensions
-
         edges = helper_create_room(dims)
         for edge in edges:
             scene.visuals.Line(pos=edge, color='white', width=2, parent=view.scene)

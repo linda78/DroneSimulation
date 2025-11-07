@@ -331,6 +331,26 @@ class MPCAvoidanceAgent(AvoidanceAgent):
                 print(f"[MPC] Drone {drone.id}: Optimization failed: {e}")
             return None
 
+    def _get_safety_distance(self, drone: Drone) -> float:
+        """Calculate safety distance for collision avoidance"""
+        return drone.security_sphere_size * 2.1
+
+    def _predict_state(self, initial_state: np.ndarray, controls: np.ndarray) -> np.ndarray:
+        """
+        Predict state trajectory given control sequence
+
+        Args:
+            initial_state: Initial state [pos, vel]
+            controls: Control sequence (N x 3)
+
+        Returns:
+            State at final step
+        """
+        x_pred = initial_state.copy()
+        for k in range(self.N):
+            x_pred = self.A @ x_pred + self.B @ controls[k]
+        return x_pred
+
     def _solve_mpc(self, drone: Drone, target: np.ndarray, threats: List[Drone]) -> np.ndarray:
         """
         Solve MPC optimization problem
@@ -338,6 +358,8 @@ class MPCAvoidanceAgent(AvoidanceAgent):
         Adapted from collisionAvoidMPC/mpc.py mpc_control() function
         """
         from scipy.optimize import minimize
+
+        safety_dist = self._get_safety_distance(drone)
 
         def cost_function(u_flat: np.ndarray) -> float:
             """
@@ -375,7 +397,6 @@ class MPCAvoidanceAgent(AvoidanceAgent):
                     threat_pos = threat.state.position
                     to_threat = threat_pos - p_pred
                     dist = np.linalg.norm(to_threat)
-                    safety_dist = drone.security_sphere_size * 2.1
 
                     # 3a. Distance penalty
                     if dist < safety_dist:
@@ -443,7 +464,6 @@ class MPCAvoidanceAgent(AvoidanceAgent):
                     # Use CURRENT threat position (like collisionAvoidMPC)
                     threat_pos = threat.state.position
                     dist = np.linalg.norm(p_pred - threat_pos)
-                    safety_dist = drone.security_sphere_size * 2.1
                     # Constraint: dist - safety_dist >= 0
                     constraints.append(dist - safety_dist)
 
