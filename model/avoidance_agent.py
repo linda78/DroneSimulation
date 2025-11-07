@@ -375,18 +375,18 @@ class MPCAvoidanceAgent(AvoidanceAgent):
                     threat_pos = threat.state.position
                     to_threat = threat_pos - p_pred
                     dist = np.linalg.norm(to_threat)
-                    safety_dist = (drone.size + 1.1 * threat.size)
+                    safety_dist = drone.security_sphere_size * 2.1
 
                     # 3a. Distance penalty
                     if dist < safety_dist:
                         # Very strong penalty for being inside safety zone
-                        distance_cost += 10000.0 * (safety_dist - dist) ** 2
+                        distance_cost += 1000.0 * (safety_dist - dist) ** 2
                     else:
                         # Moderate inverse distance penalty outside safety zone
-                        distance_cost += 1000.0 / max(dist, 0.5)
+                        distance_cost += 100.0 / max(dist, 0.5)
 
                     # 3b. Lateral evasion reward (when close, reward perpendicular movement)
-                    if dist < safety_dist * 2.0 and dist > 0.01:
+                    if dist < safety_dist * 2.0 and dist > 0.0001:
                         # Calculate direction to threat
                         to_threat_norm = to_threat / dist
 
@@ -404,10 +404,10 @@ class MPCAvoidanceAgent(AvoidanceAgent):
 
                         # Strong reward for lateral movement when close
                         strength = (safety_dist * 2.0 - dist) / (safety_dist * 2.0)
-                        lateral_evasion_reward -= 100.0 * strength * lateral_speed  # Negative = reward
+                        lateral_evasion_reward -= 50.0 * strength * lateral_speed  # Negative = reward
                         distance_cost += 50.0 * strength * parallel_speed  # Penalize staying on collision line
 
-                # 4. Room boundary penalty (soft constraint)
+                # 4. Room boundary penalty (soft constraint) -- presents horizon length
                 room_penalty = 0.0
                 if self.room_dimensions is not None:
                     margin = 0.5  # Keep away from walls
@@ -443,7 +443,7 @@ class MPCAvoidanceAgent(AvoidanceAgent):
                     # Use CURRENT threat position (like collisionAvoidMPC)
                     threat_pos = threat.state.position
                     dist = np.linalg.norm(p_pred - threat_pos)
-                    safety_dist = (drone.size + 1.1 * threat.size)
+                    safety_dist = drone.security_sphere_size * 2.1
                     # Constraint: dist - safety_dist >= 0
                     constraints.append(dist - safety_dist)
 
@@ -458,9 +458,8 @@ class MPCAvoidanceAgent(AvoidanceAgent):
         # Bounds on acceleration
         bounds = [(-2.5, 2.5) for _ in range(self.N * 3)]
 
-        # Constraints - DISABLED for now as they make head-on collisions infeasible
         # Try soft cost only approach first
-        constraints = []  # [{'type': 'ineq', 'fun': distance_constraint}]
+        constraints = {'type': 'ineq', 'fun': distance_constraint}
 
         # Optimize
         result = minimize(
@@ -468,8 +467,7 @@ class MPCAvoidanceAgent(AvoidanceAgent):
             u0.flatten(),
             bounds=bounds,
             method='SLSQP',
-            constraints=constraints,
-            options={'maxiter': 100, 'ftol': 1e-6}
+            constraints=constraints
         )
 
         if self.debug:
