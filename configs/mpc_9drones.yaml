@@ -1,0 +1,191 @@
+# MPC Collision Avoidance Test with 9 Drones
+# 8 drones fly corner to corner, 1 drone circles in the middle
+
+simulation:
+  name: "MPC 9 Drones Test"
+  duration: 150.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [30.0, 30.0, 30.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  # Corner 1: (5,5,5) → (25,25,25)
+  - count: 1
+    initial_positions:
+      - [5, 5, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 0.0, 0.0]  # Red
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 25, 25]
+        - [5, 5, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 2: (25,5,5) → (5,25,25)
+  - count: 1
+    initial_positions:
+      - [25, 5, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.0, 1.0, 0.0]  # Green
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 25, 25]
+        - [25, 5, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 3: (5,25,5) → (25,5,25)
+  - count: 1
+    initial_positions:
+      - [5, 25, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.0, 0.0, 1.0]  # Blue
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 5, 25]
+        - [5, 25, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 4: (5,5,25) → (25,25,5)
+  - count: 1
+    initial_positions:
+      - [5, 5, 25]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 1.0, 0.0]  # Yellow
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 25, 5]
+        - [5, 5, 25]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 5: (25,25,5) → (5,5,25)
+  - count: 1
+    initial_positions:
+      - [25, 25, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 0.0, 1.0]  # Magenta
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 5, 25]
+        - [25, 25, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 6: (25,5,25) → (5,25,5)
+  - count: 1
+    initial_positions:
+      - [25, 5, 25]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.0, 1.0, 1.0]  # Cyan
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 25, 5]
+        - [25, 5, 25]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 7: (5,25,25) → (25,5,5)
+  - count: 1
+    initial_positions:
+      - [5, 25, 25]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 0.5, 0.0]  # Orange
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 5, 5]
+        - [5, 25, 25]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 8: (25,25,25) → (5,5,5)
+  - count: 1
+    initial_positions:
+      - [25, 25, 25]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.5, 0.0, 1.0]  # Purple
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 5, 5]
+        - [25, 25, 25]
+      tolerance: 2.0
+      loop: true
+
+  # Center drone: circles at (15,15,15) with radius 7
+  - count: 1
+    initial_positions:
+      - [22, 15, 15]  # Start at radius 7 from center
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 1.0, 1.0]  # White
+    route_type: "circle"
+    route_params:
+      center: [15, 15, 15]
+      radius: 7.0
+      angular_speed: 0.5  # radians per second
+      plane: "xy"  # Circle in XY plane
+
+flight_model:
+  type: "mpc"
+  params: {}
+
+avoidance:
+  type: "mpc"
+  detection_radius: 10.0
+  params:
+    prediction_horizon: 10
+    Q_weight: 1.0
+    R_weight: 0.1
+    safety_margin: 1.5
+    debug: false
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 5000
+  camera_follow: null
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output"

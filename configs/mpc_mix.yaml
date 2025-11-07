@@ -1,0 +1,100 @@
+# MPC Collision Avoidance Test Configuration
+# 2 drones on collision course to test MPC avoidance
+
+simulation:
+  name: "MPC Avoidance Test"
+  duration: 30.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [30.0, 30.0, 20.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  # Two drones on collision course (horizontal)
+  - count: 1
+    initial_positions:
+      - [2, 10, 5]   # Left side
+    max_speed: 3.0
+    max_acceleration: 2.5
+    size: 0.5
+    gif_path: null
+    color: [1.0, 0.0, 0.0]  # Red
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [18, 10, 5]  # Goes to right
+        - [2, 10, 5]   # Returns to left
+      tolerance: 0.5
+      loop: true
+
+  - count: 1
+    initial_positions:
+      - [18, 10, 5]  # Right side
+    max_speed: 3.0
+    max_acceleration: 2.5
+    size: 0.5
+    gif_path: null
+    color: [0.0, 0.0, 1.0]  # Blue
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [2, 10, 5]   # Goes to left
+        - [18, 10, 5]  # Returns to right
+      tolerance: 0.5
+      loop: true
+
+  - count: 1
+    initial_positions:
+      - [ 5, 5, 5 ]
+    max_speed: 3.0
+    max_acceleration: 2.5
+    size: 0.5
+    gif_path: null
+    color: [ 0.0, 0.5, 0.0 ]  # green
+    route_type: "circular"
+    route_params:
+      center: [ 12.5, 12.5, 0 ]
+      radius: 8.0
+      height: 6.0
+      num_points: 10
+  - count: 1
+    initial_positions:
+      - [10, 10, 10]
+    max_speed: 3.0
+    max_acceleration: 1.5
+    size: 0.5
+    color: [0.5, 0.5, 0.5]  # gray
+    route_type: "rectangular"
+    route_params:
+      corner1: [15, 10, 5]
+      corner2: [5, 5, 5]
+      height: 10.0
+
+flight_model:
+  type: "mpc"
+  gif_path: null
+  params: {}
+
+avoidance:
+  type: "mpc"
+  detection_radius: 6.0
+  params:
+    prediction_horizon: 10
+    Q_weight: 1.0
+    R_weight: 0.1
+    safety_margin: 1.5
+    debug: false
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 5000
+  camera_follow: null
+
+export:
+  video: true
+  data: true
+  video_fps: 30
+  output_dir: "output"

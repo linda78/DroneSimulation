@@ -9,9 +9,9 @@ from pathlib import Path
 
 from model import (
     Drone, Route, Environment, Room,
-    FlightModel, PhysicalFlightModel, SimpleFlightModel,
+    FlightModel, PhysicalFlightModel, SimpleFlightModel, MPCFlightModel,
     AvoidanceAgent, RightAvoidanceAgent, RepulsiveAvoidanceAgent,
-    VelocityObstacleAvoidanceAgent
+    VelocityObstacleAvoidanceAgent, MPCAvoidanceAgent
 )
 from .config import SimulationConfig, DroneConfig
 
@@ -135,6 +135,11 @@ class Simulation:
                 gif_path=gif_path,
                 speed_factor=params.get('speed_factor', 1.0)
             )
+        elif model_type == "mpc":
+            return MPCFlightModel(
+                gif_path=gif_path,
+                dt=self.config.time_step
+            )
         else:
             return PhysicalFlightModel(gif_path=gif_path)
 
@@ -158,6 +163,16 @@ class Simulation:
             return VelocityObstacleAvoidanceAgent(
                 detection_radius=detection_radius,
                 time_horizon=params.get('time_horizon', 2.0)
+            )
+        elif agent_type == "mpc":
+            return MPCAvoidanceAgent(
+                detection_radius=detection_radius,
+                prediction_horizon=params.get('prediction_horizon', 10),
+                dt=self.config.time_step,
+                Q_weight=params.get('Q_weight', 1.0),
+                R_weight=params.get('R_weight', 0.1),
+                room_dimensions=self.room.dimensions,
+                debug=params.get('debug', False)
             )
         else:
             return RightAvoidanceAgent(detection_radius=detection_radius)
