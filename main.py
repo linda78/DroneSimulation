@@ -17,7 +17,7 @@ from export import DataExporter, VideoExporter, ExportFormat
 from api.server import run_server
 
 
-def run_simulation(config_path: str, headless: bool = False, export_video: bool = False, use_mesh: bool = False):
+def run_simulation(config_path: str, headless: bool = False, export_video: bool = False, mesh_name: str = 'spot'):
     """
     Run simulation with visualization
 
@@ -25,7 +25,7 @@ def run_simulation(config_path: str, headless: bool = False, export_video: bool 
         config_path: Path to configuration YAML file
         headless: Run without GUI (for export only)
         export_video: Export video after simulation
-        use_mesh: Use 3D mesh visualization instead of spheres
+        mesh_name: use mesh, lays in assets/drones with name
     """
     print(f"Loading configuration: {config_path}")
     config = ConfigLoader.load(config_path)
@@ -46,9 +46,12 @@ def run_simulation(config_path: str, headless: bool = False, export_video: bool 
         print("  - Scroll: Zoom")
         print("  - Close window to end simulation")
 
-        if use_mesh:
-            print("  - Using 3D mesh visualization")
-            viewer = MeshDroneViewer(simulation)
+        if mesh_name:
+            print(f"  - Using 3D mesh visualization with name ({mesh_name})")
+            # Select mesh and texture paths based on type
+            mesh_paths = [f"assets/drones/{mesh_name}.obj.gz", f"assets/drones/{mesh_name}.png"]
+            mesh_path, texture_path = mesh_paths
+            viewer = MeshDroneViewer(simulation, mesh_path=mesh_path, texture_path=texture_path)
         else:
             viewer = DroneViewer(simulation)
         viewer.run()
@@ -102,8 +105,11 @@ Examples:
   # Run with default demo configuration
   python main.py run configs/simple_demo.yaml
 
-  # Run with 3D mesh visualization
+  # Run with 3D mesh visualization (default spot mesh)
   python main.py run configs/mpc_9drones.yaml --mesh
+
+  # Run with drone2 mesh
+  python main.py run configs/mpc_9drones.yaml --mesh --mesh-type drone2
 
   # Run headless and export video
   python main.py run configs/multi_drone.yaml --headless --export-video
@@ -128,8 +134,8 @@ Examples:
                            help='Run without GUI (headless mode)')
     run_parser.add_argument('--export-video', action='store_true',
                            help='Export video after simulation')
-    run_parser.add_argument('--mesh', action='store_true',
-                           help='Use 3D mesh visualization instead of spheres')
+    run_parser.add_argument('--mesh-name', type=str, default=None,
+                           help='Name of mesh to use')
 
     # Create config command
     config_parser = subparsers.add_parser('create-config', help='Create default configuration file')
@@ -152,7 +158,7 @@ Examples:
     # Handle commands
     if args.command == 'run':
         try:
-            run_simulation(args.config, args.headless, args.export_video, args.mesh)
+            run_simulation(args.config, args.headless, args.export_video, args.mesh_name)
         except FileNotFoundError as e:
             print(f"Error: {e}", file=sys.stderr)
             sys.exit(1)
