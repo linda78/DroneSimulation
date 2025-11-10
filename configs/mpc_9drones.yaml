@@ -3,7 +3,7 @@
 
 simulation:
   name: "MPC 9 Drones Test"
-  duration: 150.0
+  duration: 60.0
   time_step: 0.05
   real_time: false
 
@@ -17,7 +17,7 @@ drones:
   - count: 1
     initial_positions:
       - [5, 5, 5]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -34,7 +34,7 @@ drones:
   - count: 1
     initial_positions:
       - [25, 5, 5]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -51,7 +51,7 @@ drones:
   - count: 1
     initial_positions:
       - [5, 25, 5]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -68,7 +68,7 @@ drones:
   - count: 1
     initial_positions:
       - [5, 5, 25]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -85,7 +85,7 @@ drones:
   - count: 1
     initial_positions:
       - [25, 25, 5]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -102,7 +102,7 @@ drones:
   - count: 1
     initial_positions:
       - [25, 5, 25]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -119,7 +119,7 @@ drones:
   - count: 1
     initial_positions:
       - [5, 25, 25]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -136,7 +136,7 @@ drones:
   - count: 1
     initial_positions:
       - [25, 25, 25]
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -153,7 +153,7 @@ drones:
   - count: 1
     initial_positions:
       - [22, 15, 15]  # Start at radius 7 from center
-    max_speed: 5.0
+    max_speed: 10.0
     max_acceleration: 3.5
     size: 0.8
     gif_path: null
@@ -167,6 +167,7 @@ drones:
 
 flight_model:
   type: "mpc"
+  gif_path: "spot"
   params: {}
 
 avoidance:
@@ -185,7 +186,7 @@ visualization:
   camera_follow: null
 
 export:
-  video: true
+  video: false
   data: true
   video_fps: 30
   output_dir: "output"

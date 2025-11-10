@@ -509,3 +509,190 @@ class MPCAvoidanceAgent(AvoidanceAgent):
 
     def get_name(self) -> str:
         return "MPCAvoidanceAgent"
+
+
+class PotentialGameAgent(AvoidanceAgent):
+    """
+    Potential game-based avoidance agent using game-theoretic approach
+    Implements a potential function with goal attraction, collision avoidance,
+    and deadlock resolution components
+    """
+
+    def __init__(
+            self,
+            alpha: float = 1.0,
+            beta: float = 2.0,
+            gamma_0: float = 0.5,
+            r_safe: float = 2.0,
+            omega: float = 1.0,
+            phi: float = 0.0,
+            eta: float = 0.1,
+            lambda_decay: float = 0.5,
+            v_min: float = 0.1
+    ):
+        """
+        Initialise potential game agent
+
+        Args:
+            alpha: Goal attraction strength
+            beta: Collision avoidance strength
+            gamma_0: Base deadlock perturbation amplitude
+            r_safe: Safe distance threshold (metres)
+            omega: Frequency of deadlock perturbation
+            phi: Phase offset for deadlock perturbation
+            eta: Adaptive amplitude growth rate
+            lambda_decay: Exponential decay rate for velocity tracking
+            v_min: Minimum velocity threshold for deadlock detection
+        """
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma_0 = gamma_0
+        self.r_safe = r_safe
+        self.omega = omega
+        self.phi = phi
+        self.eta = eta
+        self.lambda_decay = lambda_decay
+        self.v_min = v_min
+
+        # Track velocity history for adaptive amplitude
+        self.velocity_history = []
+        self.time_history = []
+        self.start_time = None
+
+    def _adaptive_gamma(self, drone: Drone, current_time: float) -> float:
+        """
+        Calculate adaptive amplitude that increases during standstill
+
+        Args:
+            drone: Current drone
+            current_time: Current simulation time
+
+        Returns:
+            Adaptive amplitude γ(t)
+        """
+        if self.start_time is None:
+            self.start_time = current_time
+
+        # Track velocity
+        velocity_magnitude = np.linalg.norm(drone.state.velocity)
+        self.velocity_history.append(velocity_magnitude)
+        self.time_history.append(current_time)
+
+        # Calculate integral term: ∫₀ᵗ e^(-λ(t-τ)) 𝟙_{||ẋᵢ(τ)|| < v_min} dτ
+        integral = 0.0
+        for i, (v, tau) in enumerate(zip(self.velocity_history, self.time_history)):
+            if v < self.v_min:
+                integral += np.exp(-self.lambda_decay * (current_time - tau))
+
+        # γᵢ(t) = γ₀ · (1 + η ∫₀ᵗ e^(-λ(t-τ)) 𝟙_{||ẋᵢ(τ)|| < v_min} dτ)
+        gamma_t = self.gamma_0 * (1.0 + self.eta * integral)
+
+        return gamma_t
+
+    def _potential_gradient(
+            self,
+            xi: np.ndarray,
+            drone: Drone,
+            positions: List[np.ndarray],
+            goal: np.ndarray,
+            current_time: float
+    ) -> np.ndarray:
+        """
+        Calculate gradient of potential function ∇Φ
+
+        Args:
+            xi: Current position of drone
+            drone: Current drone object
+            positions: Positions of all drones
+            goal: Goal position for this drone
+            current_time: Current simulation time
+
+        Returns:
+            Gradient vector
+        """
+        grad = np.zeros(3)
+
+        # Goal attraction component: ∇Φ_goal = 2α(xᵢ - gᵢ)
+        grad += 2 * self.alpha * (xi - goal)
+
+        # Collision avoidance component: ∇Φ_collision
+        for xj in positions:
+            diff = xi - xj
+            distance = np.linalg.norm(diff)
+
+            # Skip self and drones outside safe radius
+            if distance < 0.01:  # Self
+                continue
+
+            if distance < self.r_safe:
+                # ∇Φ_collision = -2β(xᵢ - xⱼ) / ||xᵢ - xⱼ||³
+                grad += -2 * self.beta * diff / (distance ** 3)
+
+        # Deadlock perturbation component: ∇Φ_deadlock
+        centre = np.mean(positions, axis=0)
+        to_centre = xi - centre
+        distance_to_centre = np.linalg.norm(to_centre)
+
+        if distance_to_centre > 0.01:
+            gamma_t = self._adaptive_gamma(drone, current_time)
+            # ∇Φ_deadlock = γ(t) sin(ωt + φ) (xᵢ - x̄) / ||xᵢ - x̄||
+            perturbation = gamma_t * np.sin(self.omega * current_time + self.phi)
+            grad += perturbation * to_centre / distance_to_centre
+
+        return grad
+
+    def calculate_avoidance(
+            self,
+            drone: Drone,
+            other_drones: List[Drone]
+    ) -> Optional[np.ndarray]:
+        """
+        Calculate avoidance using potential game approach
+
+        Strategy:
+        1. Compute gradient of potential function
+        2. Move in direction of negative gradient (gradient descent)
+        3. Components include goal attraction, collision avoidance, and deadlock resolution
+
+        Args:
+            drone: Current drone
+            other_drones: List of all other drones
+
+        Returns:
+            Normalised avoidance direction or None
+        """
+        # Get current time (use a simple counter if not available)
+        current_time = getattr(drone, 'simulation_time', 0.0)
+
+        # Collect all positions
+        positions = [drone.state.position] + [
+            other.state.position for other in other_drones if other.id != drone.id
+        ]
+
+        # Calculate gradient
+        gradient = self._potential_gradient(
+            xi=drone.state.position,
+            drone=drone,
+            positions=positions,
+            goal=drone.goal_position,
+            current_time=current_time
+        )
+
+        # Move in negative gradient direction (gradient descent)
+        avoidance_vector = -gradient
+
+        # Normalise
+        magnitude = np.linalg.norm(avoidance_vector)
+        if magnitude < 0.01:
+            return None
+
+        return avoidance_vector / magnitude
+
+    def get_name(self) -> str:
+        return "PotentialGameAgent"
+
+    def reset(self):
+        """Reset velocity history for new simulation run"""
+        self.velocity_history = []
+        self.time_history = []
+        self.start_time = None

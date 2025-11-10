@@ -19,7 +19,7 @@ drones:
     max_speed: 5.0
     max_acceleration: 2.0
     size: 0.8
-    gif_path: "assets/drones/drone2.gif"
+    gif_path: "drone_costum"
     color: [1.0, 0.2, 0.2]  # Red
     route_type: "waypoints"
     route_params:
@@ -35,7 +35,7 @@ drones:
     max_speed: 5.0
     max_acceleration: 2.0
     size: 0.8
-    gif_path: "assets/drones/drone2.gif"
+    gif_path: "drone_costum"
     color: [0.2, 0.2, 1.0]  # Blue
     route_type: "waypoints"
     route_params:
@@ -47,7 +47,7 @@ drones:
 
 flight_model:
   type: "physical"
-  gif_path: "assets/drones/drone2.gif"
+  gif_path: "drone_costum"
   params:
     drag_coefficient: 0.1
     approach_distance: 2.0

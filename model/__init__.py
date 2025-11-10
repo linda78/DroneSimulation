@@ -12,7 +12,8 @@ from .avoidance_agent import (
     RightAvoidanceAgent,
     RepulsiveAvoidanceAgent,
     VelocityObstacleAvoidanceAgent,
-    MPCAvoidanceAgent
+    MPCAvoidanceAgent,
+    PotentialGameAgent
 )
 
 __all__ = [
@@ -29,5 +30,6 @@ __all__ = [
     'RightAvoidanceAgent',
     'RepulsiveAvoidanceAgent',
     'VelocityObstacleAvoidanceAgent',
-    'MPCAvoidanceAgent'
+    'MPCAvoidanceAgent',
+    'PotentialGameAgent'
 ]

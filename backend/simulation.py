@@ -11,7 +11,7 @@ from model import (
     Drone, Route, Environment, Room,
     FlightModel, PhysicalFlightModel, SimpleFlightModel, MPCFlightModel,
     AvoidanceAgent, RightAvoidanceAgent, RepulsiveAvoidanceAgent,
-    VelocityObstacleAvoidanceAgent, MPCAvoidanceAgent
+    VelocityObstacleAvoidanceAgent, MPCAvoidanceAgent, PotentialGameAgent
 )
 from .config import SimulationConfig, DroneConfig
 
@@ -174,6 +174,18 @@ class Simulation:
                 room_dimensions=self.room.dimensions,
                 debug=params.get('debug', False)
             )
+        elif agent_type == "potential_game":
+            return PotentialGameAgent(
+                alpha=params.get('alpha', 1.0),
+                beta=params.get('beta', 2.0),
+                gamma_0=params.get('gamma_0', 0.5),
+                r_safe=params.get('r_safe', detection_radius / 2.0),
+                omega=params.get('omega', 1.0),
+                phi=params.get('phi', 0.0),
+                eta=params.get('eta', 0.1),
+                lambda_decay=params.get('lambda_decay', 0.5),
+                v_min=params.get('v_min', 0.1)
+            )
         else:
             return RightAvoidanceAgent(detection_radius=detection_radius)
 
@@ -186,6 +198,10 @@ class Simulation:
             target = drone.get_current_target()
             if target is None:
                 continue
+
+            # Set simulation time and goal position for PotentialGameAgent
+            drone.simulation_time = self.current_time
+            drone.goal_position = target
 
             # Calculate avoidance vector
             avoidance_vector = self.avoidance_agent.calculate_avoidance(drone, self.drones)

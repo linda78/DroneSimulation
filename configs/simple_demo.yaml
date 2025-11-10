@@ -13,11 +13,9 @@ room:
   is_video: false
 
 drones:
-  - count: 3
+  - count: 1
     initial_positions:
       - [10, 10, 3]
-      - [10, 10, 5]
-      - [10, 10, 7]
     max_speed: 5.0
     max_acceleration: 2.0
     size: 0.3
@@ -31,7 +29,7 @@ drones:
       num_points: 8
 
 flight_model:
-  type: "physical"
+  type: "simple"
   gif_path: null
   params:
     drag_coefficient: 0.1
