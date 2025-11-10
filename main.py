@@ -10,12 +10,11 @@ import argparse
 import sys
 from pathlib import Path
 
+import api.util
 from backend import ConfigLoader, Simulation
 from gui import DroneViewer
 from gui.mesh_viewer import MeshDroneViewer
-from export import DataExporter, VideoExporter, ExportFormat
-from api.server import run_server
-
+from export import DataExporter, VideoExporter
 
 def run_simulation(config_path: str, headless: bool = False, export_video: bool = False, mesh_name: str = 'spot'):
     """
@@ -87,12 +86,13 @@ def create_default_config(output_path: str):
     ConfigLoader.create_default_config(output_path)
     print("Configuration file created successfully!")
 
-
-def start_api_server(host: str = '0.0.0.0', port: int = 5000, debug: bool = False):
+def start_api_server(host: str = '0.0.0.0', port: int = 5001, debug: bool = False):
     """Start the REST API server"""
+    from api.server import app
     print(f"Starting API server on {host}:{port}")
     print(f"API documentation available at http://{host}:{port}/")
-    run_server(host=host, port=port, debug=debug)
+
+    app.run(host=host, port=port, debug=debug)
 
 
 def main():

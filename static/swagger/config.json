@@ -1,0 +1,461 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Drone Simulation API",
+    "description": "REST API for controlling and monitoring drone simulations.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5001"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Status",
+      "description": "Get simulation status and information"
+    },
+    {
+      "name": "Simulation",
+      "description": "Create, load, and manage simulations"
+    },
+    {
+      "name": "Simulation Control",
+      "description": "Control simulation playback (start, stop, reset, step)"
+    },
+    {
+      "name": "Drones",
+      "description": "Access drone information and states"
+    },
+    {
+      "name": "History",
+      "description": "Access simulation history and recorded states"
+    }
+  ],
+  "paths": {
+    "/api/simulation": {
+      "get": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Get current simulation state",
+        "description": "Returns the current state of the loaded simulation including drone positions and configuration",
+        "responses": {
+          "200": {
+            "description": "Current simulation state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "drones": {
+                      "type": "array",
+                      "description": "Array of drone objects"
+                    },
+                    "time": {
+                      "type": "number",
+                      "description": "Current simulation time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No simulation loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No simulation loaded"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Create or load a new simulation",
+        "description": "Creates a new simulation from a config file path or configuration dictionary",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Simulation created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Simulation loaded successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid configuration or missing parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      },
+      "delete": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Stop the running simulation",
+        "description": "Stops the currently running simulation and clears its state",
+        "responses": {
+          "200": {
+            "description": "Simulation stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Simulation stopped"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/simulation/control/{action}": {
+      "post": {
+        "tags": [
+          "Simulation Control"
+        ],
+        "summary": "Execute simulation control action",
+        "description": "Control simulation playback with various actions:\n- start: Start the simulation\n- stop: Stop the simulation\n- reset: Reset simulation to initial state\n- step: Execute one simulation step",
+        "parameters": [
+          {
+            "name": "action",
+            "in": "path",
+            "description": "Control action to execute",
+            "required": true,
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Action executed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Simulation started"
+                    },
+                    "completed": {
+                      "type": "boolean",
+                      "description": "Only for step action - indicates if simulation is completed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid action or simulation already in requested state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No simulation loaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No simulation loaded"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drones": {
+      "get": {
+        "tags": [
+          "Drones"
+        ],
+        "summary": "Get information about all drones",
+        "description": "Returns information about all drones",
+        "responses": {
+          "200": {
+            "description": "Drone information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "drones": {
+                      "type": "array",
+                      "description": "Array of drone objects",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer",
+                            "description": "Unique drone identifier"
+                          },
+                          "position": {
+                            "type": "array",
+                            "description": "3D position [x, y, z]",
+                            "items": {
+                              "type": "number"
+                            }
+                          },
+                          "velocity": {
+                            "type": "array",
+                            "description": "3D velocity vector",
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Simulation not loaded or drone not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drones/{drone_id}": {
+      "get": {
+        "tags": [
+          "Drones"
+        ],
+        "summary": "Get information about a specific drone",
+        "description": "Returns information about a specific drone by ID",
+        "parameters": [
+          {
+            "name": "drone_id",
+            "in": "path",
+            "description": "ID of specific drone to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drone information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "Drone ID"
+                    },
+                    "position": {
+                      "type": "array",
+                      "description": "3D position [x, y, z]",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "velocity": {
+                      "type": "array",
+                      "description": "3D velocity vector",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Simulation not loaded or drone not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history": {
+      "get": {
+        "tags": [
+          "History"
+        ],
+        "summary": "Get complete simulation history",
+        "description": "Returns the complete history of simulation states over time",
+        "responses": {
+          "200": {
+            "description": "Simulation history retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": {
+                      "type": "array",
+                      "description": "Array of historical simulation states",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "time": {
+                            "type": "number",
+                            "description": "Timestamp of the state"
+                          },
+                          "drones": {
+                            "type": "array",
+                            "description": "Drone states at this time"
+                          }
+                        }
+                      }
+                    },
+                    "length": {
+                      "type": "integer",
+                      "description": "Number of history entries",
+                      "example": 150
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "summary": "Get current simulation status",
+        "description": "Returns the current status of the simulation including runtime information",
+        "responses": {
+          "200": {
+            "description": "Simulation status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "loaded": {
+                      "type": "boolean",
+                      "description": "Whether a simulation is currently loaded",
+                      "example": true
+                    },
+                    "running": {
+                      "type": "boolean",
+                      "description": "Whether the simulation is currently running",
+                      "example": false
+                    },
+                    "current_time": {
+                      "type": "number",
+                      "description": "Current simulation time (only if loaded)",
+                      "example": 12.5
+                    },
+                    "duration": {
+                      "type": "number",
+                      "description": "Total simulation duration (only if loaded)",
+                      "example": 100
+                    },
+                    "num_drones": {
+                      "type": "integer",
+                      "description": "Number of drones in simulation (only if loaded)",
+                      "example": 8
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "x-original-swagger-version": "2.0"
+}
