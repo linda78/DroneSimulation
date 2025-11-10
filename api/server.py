@@ -5,6 +5,7 @@ Flask REST API for drone simulation control
 from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from flask_cors import CORS
+from flasgger import Swagger
 import threading
 from typing import Optional
 
@@ -88,33 +89,128 @@ class SimulationResource(Resource):
     """REST resource for simulation control"""
 
     def get(self):
-        """Get current simulation state"""
+        """Get current simulation state
+        ---
+        tags:
+          - Simulation
+        summary: Get current simulation state
+        description: Returns the current state of the loaded simulation including drone positions and configuration
+        responses:
+          200:
+            description: Current simulation state
+            schema:
+              type: object
+              properties:
+                drones:
+                  type: array
+                  description: Array of drone objects
+                time:
+                  type: number
+                  description: Current simulation time
+          404:
+            description: No simulation loaded
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: No simulation loaded
+        """
         state = sim_api.get_state()
         if state is None:
             return {'error': 'No simulation loaded'}, 404
         return jsonify(state)
 
     def post(self):
-        """Create new simulation"""
+        """Create new simulation
+        ---
+        tags:
+          - Simulation
+        summary: Create or load a new simulation
+        description: Creates a new simulation from a config file path or configuration dictionary
+        parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              type: object
+              oneOf:
+                - properties:
+                    config_path:
+                      type: string
+                      description: Path to YAML configuration file
+                      example: configs/mpc_8Drones_WorkingOnEdge.yaml
+                - properties:
+                    config:
+                      type: object
+                      description: Configuration dictionary
+        responses:
+          201:
+            description: Simulation created successfully
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Simulation loaded successfully
+          400:
+            description: Invalid configuration or missing parameters
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+        """
         data = request.get_json()
+        print(f"DEBUG: Received data: {data}")
+        print(f"DEBUG: Data type: {type(data)}")
+        print(f"DEBUG: Keys in data: {data.keys() if data else 'None'}")
 
         if 'config_path' in data:
             try:
+                print(f"DEBUG: Attempting to load config from: {data['config_path']}")
                 sim_api.load_config(data['config_path'])
-                return {'message': 'Simulation loaded successfully'}, 201
+                print(f"DEBUG: Config loaded successfully!")
+                response = {'message': 'Simulation loaded successfully'}
+                print(f"DEBUG: Returning response: {response} with status 201")
+                return response, 201
             except Exception as e:
+                print(f"DEBUG: Exception caught: {type(e).__name__}: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 return {'error': str(e)}, 400
         elif 'config' in data:
             try:
+                print(f"DEBUG: Creating simulation from config dict")
                 sim_api.create_simulation(data['config'])
+                print(f"DEBUG: Simulation created successfully!")
                 return {'message': 'Simulation created successfully'}, 201
             except Exception as e:
+                print(f"DEBUG: Exception in config creation: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 return {'error': str(e)}, 400
         else:
+            print(f"DEBUG: No config_path or config found in data")
             return {'error': 'Missing config_path or config in request'}, 400
 
     def delete(self):
-        """Stop and clear simulation"""
+        """Stop and clear simulation
+        ---
+        tags:
+          - Simulation
+        summary: Stop the running simulation
+        description: Stops the currently running simulation and clears its state
+        responses:
+          200:
+            description: Simulation stopped successfully
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Simulation stopped
+        """
         sim_api.stop_simulation()
         return {'message': 'Simulation stopped'}, 200
 
@@ -123,7 +219,53 @@ class SimulationControlResource(Resource):
     """REST resource for simulation playback control"""
 
     def post(self, action):
-        """Execute control action"""
+        """Execute control action
+        ---
+        tags:
+          - Simulation Control
+        summary: Execute simulation control action
+        description: |
+          Control simulation playback with various actions:
+          - start: Start the simulation
+          - stop: Stop the simulation
+          - reset: Reset simulation to initial state
+          - step: Execute one simulation step
+        parameters:
+          - in: path
+            name: action
+            required: true
+            schema:
+              type: string
+              enum: [start, stop, reset, step]
+            description: Control action to execute
+        responses:
+          200:
+            description: Action executed successfully
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Simulation started
+                completed:
+                  type: boolean
+                  description: Only for step action - indicates if simulation is completed
+          400:
+            description: Invalid action or simulation already in requested state
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+          404:
+            description: No simulation loaded
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: No simulation loaded
+        """
         if action == 'start':
             success = sim_api.start_simulation()
             if success:
@@ -157,7 +299,60 @@ class DronesResource(Resource):
     """REST resource for drone information"""
 
     def get(self, drone_id=None):
-        """Get drone(s) information"""
+        """Get drone(s) information
+        ---
+        tags:
+          - Drones
+        summary: Get information about drone(s)
+        description: Returns information about all drones or a specific drone by ID
+        parameters:
+          - in: path
+            name: drone_id
+            required: false
+            schema:
+              type: integer
+            description: ID of specific drone to retrieve (optional)
+        responses:
+          200:
+            description: Drone information retrieved successfully
+            schema:
+              type: object
+              properties:
+                drones:
+                  type: array
+                  description: Array of drone objects (when no drone_id specified)
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        description: Unique drone identifier
+                      position:
+                        type: array
+                        items:
+                          type: number
+                        description: 3D position [x, y, z]
+                      velocity:
+                        type: array
+                        items:
+                          type: number
+                        description: 3D velocity vector
+                id:
+                  type: integer
+                  description: Drone ID (when specific drone_id requested)
+                position:
+                  type: array
+                  items:
+                    type: number
+                  description: 3D position [x, y, z]
+          404:
+            description: Simulation not loaded or drone not found
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+        """
         state = sim_api.get_state()
         if state is None:
             return {'error': 'No simulation loaded'}, 404
@@ -178,7 +373,35 @@ class HistoryResource(Resource):
     """REST resource for simulation history"""
 
     def get(self):
-        """Get simulation history"""
+        """Get simulation history
+        ---
+        tags:
+          - History
+        summary: Get complete simulation history
+        description: Returns the complete history of simulation states over time
+        responses:
+          200:
+            description: Simulation history retrieved successfully
+            schema:
+              type: object
+              properties:
+                history:
+                  type: array
+                  description: Array of historical simulation states
+                  items:
+                    type: object
+                    properties:
+                      time:
+                        type: number
+                        description: Timestamp of the state
+                      drones:
+                        type: array
+                        description: Drone states at this time
+                length:
+                  type: integer
+                  description: Number of history entries
+                  example: 150
+        """
         history = sim_api.get_history()
         return jsonify({
             'history': history,
@@ -190,7 +413,39 @@ class StatusResource(Resource):
     """REST resource for simulation status"""
 
     def get(self):
-        """Get simulation status"""
+        """Get simulation status
+        ---
+        tags:
+          - Status
+        summary: Get current simulation status
+        description: Returns the current status of the simulation including runtime information
+        responses:
+          200:
+            description: Simulation status retrieved successfully
+            schema:
+              type: object
+              properties:
+                loaded:
+                  type: boolean
+                  description: Whether a simulation is currently loaded
+                  example: true
+                running:
+                  type: boolean
+                  description: Whether the simulation is currently running
+                  example: false
+                current_time:
+                  type: number
+                  description: Current simulation time (only if loaded)
+                  example: 12.5
+                duration:
+                  type: number
+                  description: Total simulation duration (only if loaded)
+                  example: 100.0
+                num_drones:
+                  type: integer
+                  description: Number of drones in simulation (only if loaded)
+                  example: 8
+        """
         if sim_api.simulation is None:
             return jsonify({
                 'loaded': False,
@@ -215,6 +470,38 @@ def create_app():
     """
     app = Flask(__name__)
     CORS(app)  # Enable CORS for web frontend
+
+    # Configure Swagger
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec',
+                "route": '/apispec.json',
+                "rule_filter": lambda rule: True,
+                "model_filter": lambda tag: True,
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/apidocs/"
+    }
+
+    swagger_template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "Drone Simulation API",
+            "description": "REST API for controlling and monitoring drone simulation",
+            "version": "1.0.0",
+            "contact": {
+                "name": "API Support"
+            }
+        },
+        "basePath": "/",
+        "schemes": ["http", "https"],
+    }
+
+    Swagger(app, config=swagger_config, template=swagger_template)
 
     api = Api(app)
 
@@ -249,7 +536,7 @@ def create_app():
     return app
 
 
-def run_server(host='0.0.0.0', port=5000, debug=False):
+def run_server(host='0.0.0.0', port=5001, debug=False):
     """
     Run the Flask server
 
