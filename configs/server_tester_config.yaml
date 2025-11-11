@@ -1,0 +1,103 @@
+# MPC Collision Avoidance Test with 9 Drones
+# 8 drones fly corner to corner, 1 drone circles in the middle
+
+simulation:
+  name: "Test the Server thingi"
+  duration: 30.0
+  time_step: 0.05
+  real_time: false
+
+room:
+  dimensions: [30.0, 30.0, 30.0]
+  texture_path: null
+  is_video: false
+
+drones:
+  # Corner 1: (5,5,5) → (25,25,25)
+  - count: 1
+    initial_positions:
+      - [5, 5, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 0.0, 0.0]  # Red
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 25, 25]
+        - [5, 5, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 2: (25,5,5) → (5,25,25)
+  - count: 1
+    initial_positions:
+      - [25, 5, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.0, 1.0, 0.0]  # Green
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [5, 25, 25]
+        - [25, 5, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 3: (5,25,5) → (25,5,25)
+  - count: 1
+    initial_positions:
+      - [5, 25, 5]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [0.0, 0.0, 1.0]  # Blue
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 5, 25]
+        - [5, 25, 5]
+      tolerance: 2.0
+      loop: true
+
+  # Corner 4: (5,5,25) → (25,25,5)
+  - count: 1
+    initial_positions:
+      - [5, 5, 25]
+    max_speed: 5.0
+    max_acceleration: 3.5
+    size: 0.8
+    gif_path: null
+    color: [1.0, 1.0, 0.0]  # Yellow
+    route_type: "waypoints"
+    route_params:
+      positions:
+        - [25, 25, 5]
+        - [5, 5, 25]
+      tolerance: 2.0
+      loop: true
+
+flight_model:
+  type: "simple"
+  params: {}
+
+avoidance:
+  type: "right"
+  detection_radius: 6.0
+  params:
+    avoidance_strength: 1.0
+
+visualization:
+  show_trajectories: true
+  trajectory_length: 5000
+  camera_follow: 0
+
+export:
+  video: false
+  data: true
+  video_fps: 30
+  output_dir: "output"
