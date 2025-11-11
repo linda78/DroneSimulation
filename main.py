@@ -103,7 +103,7 @@ def main():
         epilog="""
 Examples:
   # Run with default demo configuration
-  python main.py run configs/simple_demo.yaml
+  python main.py run configs/server_tester_config.yaml
 
   # Run with 3D mesh visualization (default spot mesh)
   python main.py run configs/mpc_9drones.yaml --mesh

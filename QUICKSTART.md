@@ -12,7 +12,7 @@ pip install -r requirements.txt
 ### 1. Start Simple Demo
 
 ```bash
-python main.py run configs/simple_demo.yaml
+python main.py run configs/server_tester_config.yaml
 ```
 
 This starts a 3D visualisation with 3 drones flying in circles.
@@ -43,7 +43,7 @@ python main.py run configs/stress_test.yaml
 
 With data export:
 ```bash
-python main.py run configs/simple_demo.yaml --headless
+python main.py run configs/server_tester_config.yaml --headless
 ```
 
 The results are saved in `output/`:
@@ -75,7 +75,7 @@ curl http://localhost:5000/api/status
 # Load simulation
 curl -X POST http://localhost:5000/api/simulation \
   -H "Content-Type: application/json" \
-  -d '{"config_path": "configs/simple_demo.yaml"}'
+  -d '{"config_path": "configs/server_tester_config.yaml"}'
 
 # Start simulation
 curl -X POST http://localhost:5000/api/simulation/control/start

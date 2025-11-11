@@ -18,7 +18,7 @@ def example_1_basic_simulation():
     print("-" * 50)
 
     # Load configuration from file
-    config = ConfigLoader.load('configs/simple_demo.yaml')
+    config = ConfigLoader.load('configs/server_tester_config.yaml')
 
     # Create and run simulation
     simulation = Simulation(config)
@@ -88,7 +88,7 @@ def example_3_headless_export():
     print("-" * 50)
 
     # Load configuration
-    config = ConfigLoader.load('configs/simple_demo.yaml')
+    config = ConfigLoader.load('configs/server_tester_config.yaml')
     config.duration = 20.0  # Shorter for demo
 
     # Create and run simulation
@@ -203,7 +203,7 @@ def example_6_video_export():
     print("-" * 50)
 
     # Load configuration
-    config = ConfigLoader.load('configs/simple_demo.yaml')
+    config = ConfigLoader.load('configs/server_tester_config.yaml')
     config.duration = 15.0  # Short video for demo
 
     # Create simulation

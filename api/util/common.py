@@ -29,15 +29,28 @@ prefix = ENVIRONMENT().get_instance().getPrefix()
 
 
 def build_swagger_config_json():
-    with open(config_file_path, 'r') as file:
-        config_data = json.load(file)
+    import os
+    from pathlib import Path
 
-    config_data['servers'] = [
-        {"url": f"http://localhost:{port}{prefix}"}
-        # ,{"url": f"http://{domain}:{port}{prefix}"}
-    ]
+    # Create directory if it doesn't exist
+    config_path = Path(config_file_path)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
 
-    new_config_file_path = config_file_path
+    # Check if file exists
+    if not config_path.exists():
+        print(f"Warning: {config_file_path} not found. Skipping swagger config update.")
+        return
 
-    with open(new_config_file_path, 'w') as new_file:
-        json.dump(config_data, new_file, indent=2)
+    try:
+        with open(config_file_path, 'r') as file:
+            config_data = json.load(file)
+
+        config_data['servers'] = [
+            {"url": f"http://localhost:{port}{prefix}"}
+            # ,{"url": f"http://{domain}:{port}{prefix}"}
+        ]
+
+        with open(config_file_path, 'w') as new_file:
+            json.dump(config_data, new_file, indent=2)
+    except Exception as e:
+        print(f"Warning: Could not update swagger config: {e}")

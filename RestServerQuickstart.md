@@ -52,7 +52,7 @@ The Swagger UI provides an interactive interface where you can:
 **Important:** When using file paths in Swagger UI, always use **absolute paths**:
 ```json
 {
-  "config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/simple_demo.yaml"
+  "config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/server_tester_config.yaml"
 }
 ```
 
@@ -72,7 +72,7 @@ Use this when you have a YAML configuration file:
 curl -X POST "http://localhost:5001/api/simulation" \
   -H "Content-Type: application/json" \
   -d '{
-    "config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/simple_demo.yaml"
+    "config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/server_tester_config.yaml"
   }'
 ```
 
@@ -179,7 +179,7 @@ BASE_URL = "http://localhost:5001"
 # Load simulation from config file
 response = requests.post(
     f"{BASE_URL}/api/simulation",
-    json={"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/simple_demo.yaml"}
+    json={"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/server_tester_config.yaml"}
 )
 print(response.json())  # {'message': 'Simulation loaded successfully'}
 
@@ -409,7 +409,7 @@ curl http://localhost:5001/api/history
 # 1. Load simulation from config file
 curl -X POST "http://localhost:5001/api/simulation" \
   -H "Content-Type: application/json" \
-  -d '{"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/simple_demo.yaml"}'
+  -d '{"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/server_tester_config.yaml"}'
 
 # 2. Check status
 curl http://localhost:5001/api/status
@@ -433,7 +433,7 @@ curl -X POST http://localhost:5001/api/simulation/control/stop
 # 1. Load simulation
 curl -X POST "http://localhost:5001/api/simulation" \
   -H "Content-Type: application/json" \
-  -d '{"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/simple_demo.yaml"}'
+  -d '{"config_path": "/Users/lindamumken/work/repos/tmp/DroneSimulation/configs/server_tester_config.yaml"}'
 
 # 2. Execute single steps manually
 curl -X POST http://localhost:5001/api/simulation/control/step

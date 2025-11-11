@@ -66,7 +66,7 @@ PythonProject1/
 │   ├── data_exporter.py   # Data Export (CSV, JSON, etc.)
 │   └── video_exporter.py  # Video Export
 ├── configs/            # Example Configurations
-│   ├── simple_demo.yaml
+│   ├── server_tester_config.yaml
 │   ├── multi_drone.yaml
 │   ├── stress_test.yaml
 │   └── camera_follow.yaml
@@ -101,7 +101,7 @@ pip install -r requirements.txt
 
 Simple demo with 3D visualisation:
 ```bash
-python main.py run configs/simple_demo.yaml
+python main.py run configs/server_tester_config.yaml
 ```
 
 Multi-drone demo:
@@ -111,7 +111,7 @@ python main.py run configs/multi_drone.yaml
 
 Headless mode (without GUI):
 ```bash
-python main.py run configs/simple_demo.yaml --headless
+python main.py run configs/server_tester_config.yaml --headless
 ```
 
 With video export:
@@ -256,7 +256,7 @@ python main.py api
 # Load simulation
 curl -X POST http://localhost:5000/api/simulation \
   -H "Content-Type: application/json" \
-  -d '{"config_path": "configs/simple_demo.yaml"}'
+  -d '{"config_path": "configs/server_tester_config.yaml"}'
 
 # Start simulation
 curl -X POST http://localhost:5000/api/simulation/control/start
@@ -336,7 +336,7 @@ class MyAvoidanceAgent(AvoidanceAgent):
 
 ### 1. Simple Demo (3 Drones)
 ```bash
-python main.py run configs/simple_demo.yaml
+python main.py run configs/server_tester_config.yaml
 ```
 
 ### 2. Multi-Drone (8 Drones, Different Groups)

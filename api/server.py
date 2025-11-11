@@ -23,7 +23,7 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     prefix,
     f'{prefix}/swagger-config',
     config={
-        'app_name': "Flask API",
+        'app_name': "Drone Simulation API",
         "layout": "BaseLayout",
         "docExpansion": "none"
     },
