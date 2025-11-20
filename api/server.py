@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_restful import Api, MethodNotAllowed, NotFound
 from flask_swagger_ui import get_swaggerui_blueprint
 
-from api.resources import SimulationResource, SimulationControlResource, DronesResource, HistoryResource, StatusResource, SwaggerConfig
+from api.resources import SimulationResource, SimulationControlResource, DronesResource, HistoryResource, StatusResource, SwaggerConfig, ImageCaptureResource
 from api.util.common import prefix, build_swagger_config_json
 
 # ============================================
@@ -59,6 +59,7 @@ api.add_resource(SimulationControlResource, '/api/simulation/control/<string:act
 api.add_resource(DronesResource, '/api/drones', '/api/drones/<int:drone_id>')
 api.add_resource(HistoryResource, '/api/history')
 api.add_resource(StatusResource, '/api/status')
+api.add_resource(ImageCaptureResource, '/api/capture')
 api.add_resource(SwaggerConfig, '/swagger-config')
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@
 
 simulation:
   name: "Test the Server thingi"
-  duration: 30.0
+  duration: 300.0
   time_step: 0.05
   real_time: false
 

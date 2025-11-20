@@ -1,6 +1,9 @@
 import requests
 import json
 import os
+import threading
+import queue
+import time
 from pathlib import Path
 
 DEBUGSERVER = False
@@ -74,6 +77,28 @@ class SimulationTester:
     def is_running(self):
         """Check if the simulation is running"""
         self.get_status().json().get('running')
+
+    def get_pictures(self, picture_format: str = "jpeg", width: int = 600, height: int = 400, view_type: str = "3d"):
+        """Capture current simulation state as image"""
+        response = requests.get(
+            f"{self.base_url}/api/capture",
+            params={
+                "format": picture_format,
+                "width": width,
+                "height": height,
+                "view_type": view_type
+            }
+        )
+
+        if response.status_code == 200:
+            # Success - binary image data received
+            if DEBUGSERVER:
+                print(f"✓ Image captured: {picture_format} ({len(response.content)} bytes)")
+            return response
+        else:
+            # Error response (JSON)
+            print(f"✗ Image capture failed: {response.json()}")
+            return response
 
     def get_all_drones(self):
         """Get information about all drones"""
@@ -160,8 +185,33 @@ class SimulationTester:
             print(f"\n❌ Test failed: {e}")
             raise
 
+    def _image_capture_worker(self, task_queue, result_queue, picture_format, image_dir):
+        """Worker thread for capturing and saving images asynchronously"""
+        while True:
+            task = task_queue.get()
+            if task is None:  # Poison pill to stop the worker
+                break
+
+            frame_count, current_time = task
+
+            try:
+                # Capture image
+                response = self.get_pictures(picture_format)
+                if response.status_code == 200:
+                    # Save image with timestamp in filename
+                    image_path = image_dir / f"frame_{frame_count:04d}_t{current_time:.2f}.{picture_format}"
+                    with open(image_path, 'wb') as f:
+                        f.write(response.content)
+                    result_queue.put(('success', frame_count, image_path.name))
+                else:
+                    result_queue.put(('error', frame_count, f"HTTP {response.status_code}"))
+            except Exception as e:
+                result_queue.put(('error', frame_count, str(e)))
+            finally:
+                task_queue.task_done()
+
     def run_simulation_test(self, config_name: str = "server_tester_config.yaml"):
-        """Run a basic test sequence"""
+        """Run a basic test sequence with async image capture"""
         print("="*60)
         print("DRONE SIMULATION API - BASIC TEST")
         print("="*60)
@@ -171,17 +221,89 @@ class SimulationTester:
             return
 
         try:
+            # Create output directory for images
+            image_dir = self.project_root / "output" / "images"
+            image_dir.mkdir(parents=True, exist_ok=True)
+            print(f"\n📁 Saving images to: {image_dir}")
+            picture_format = "png"  # Capture PNG frames to build buffer for GIF
+
+            # Setup async image capture
+            task_queue = queue.Queue()
+            result_queue = queue.Queue()
+            worker = threading.Thread(
+                target=self._image_capture_worker,
+                args=(task_queue, result_queue, picture_format, image_dir),
+                daemon=True
+            )
+            worker.start()
+
             # Load simulation
             self.load_simulation(config_name)
 
             self.start_simulation()
 
             is_running = True
+            frame_count = 0
             while is_running:
-                print(f"current time: {self.get_status().json().get('current_time')}")
+                status_data = self.get_status().json()
+                current_time = status_data.get('current_time')
+                print(f"current time: {current_time}")
+
+                # Queue image capture (non-blocking)
+                task_queue.put((frame_count, current_time))
+                frame_count += 1
+
+                # Check for completed captures
+                while not result_queue.empty():
+                    status, fnum, info = result_queue.get_nowait()
+                    if status == 'success' and DEBUGSERVER:
+                        print(f"  💾 Saved: {info}")
+                    elif status == 'error':
+                        print(f"  ✗ Frame {fnum} failed: {info}")
+
                 for drone in self.get_all_drones().json().get("drones"):
                     print(f"{drone.get('id')} -> {drone.get('position')} -- History: ({drone.get('trajectory')})")
-                is_running = self.get_status().json().get('running')
+
+                # Check if simulation is still running
+                is_running = status_data.get('running')
+
+                # Add delay to allow simulation to advance between captures
+                # This ensures we capture different frames, not the same state repeatedly
+                if is_running:
+                    time.sleep(0.1)  # 100ms delay - adjust based on simulation step rate
+
+            print("\n📊 Simulation finished, stopping image capture...")
+
+            # Stop worker and wait for remaining tasks
+            task_queue.put(None)  # Poison pill
+
+            # Wait for worker to finish with a timeout to prevent hanging
+            print("⏳ Waiting for image worker to complete...")
+            worker.join(timeout=5)  # 5 second timeout
+            if worker.is_alive():
+                print("⚠ Worker thread didn't finish in time, but continuing...")
+
+            # Process any remaining results
+            while not result_queue.empty():
+                status, fnum, info = result_queue.get_nowait()
+                if status == 'success' and DEBUGSERVER:
+                    print(f"  💾 Saved: {info}")
+
+            print(f"\n✓ Simulation complete! Captured {frame_count} PNG images in {image_dir}")
+
+            # Now create a GIF from all the buffered frames
+            print("\n🎬 Creating animated GIF from captured frames...")
+            try:
+                gif_response = self.get_pictures(picture_format="gif")
+                if gif_response.status_code == 200:
+                    gif_path = image_dir / "simulation_animation.gif"
+                    with open(gif_path, 'wb') as f:
+                        f.write(gif_response.content)
+                    print(f"✓ GIF saved: {gif_path} ({len(gif_response.content)} bytes)")
+                else:
+                    print(f"✗ GIF creation failed: {gif_response.json()}")
+            except Exception as e:
+                print(f"✗ GIF creation error: {e}")
 
         except Exception as e:
             print(f"\n❌ Test failed: {e}")
