@@ -181,7 +181,7 @@ class SimpleFlightModel(FlightModel):
         speed = min(drone.max_speed * self.speed_factor, distance / dt)
         new_state.velocity = direction * speed
         new_state.position += new_state.velocity * dt
-        new_state.position *= np.random.uniform(low=0.1, high=0.5, size=3)
+        # new_state.position *= np.random.uniform(low=0.1, high=0.5, size=3)
 
         # Update orientation
         if speed > 0.1:
