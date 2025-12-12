@@ -126,6 +126,7 @@ class PhysicalFlightModel(FlightModel):
 
         # Update position
         new_state.position += new_state.velocity * dt
+        new_state.position *= np.random.uniform(low=0.01, high=0.25, size=(3,))
 
         # Update orientation (yaw to face direction of movement)
         if speed > 0.1:
@@ -180,6 +181,7 @@ class SimpleFlightModel(FlightModel):
         speed = min(drone.max_speed * self.speed_factor, distance / dt)
         new_state.velocity = direction * speed
         new_state.position += new_state.velocity * dt
+        new_state.position *= np.random.uniform(low=0.01, high=0.25, size=(3,))
 
         # Update orientation
         if speed > 0.1:
@@ -285,7 +287,8 @@ class MPCFlightModel(FlightModel):
                 # Apply dynamics
                 state_vec = self.A @ state_vec + self.B @ acceleration
 
-                new_state.position = state_vec[:3]
+                # some semy flying zikzak
+                new_state.position = state_vec[:3] * np.random.uniform(low=0.01, high=0.25, size=(3,))
                 new_state.velocity = state_vec[3:]
                 new_state.acceleration = acceleration
 
