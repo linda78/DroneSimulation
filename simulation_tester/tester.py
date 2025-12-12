@@ -1,3 +1,5 @@
+import csv
+
 import requests
 import json
 import os
@@ -160,7 +162,7 @@ class SimulationTester:
             print(f"\n❌ Test failed: {e}")
             raise
 
-    def run_simulation_test(self, config_name: str = "server_tester_config.yaml"):
+    def run_simulation_test(self, config_name: str = "server_tester_config.yaml", export_file: str = "server_tester_config.csv"):
         """Run a basic test sequence"""
         print("="*60)
         print("DRONE SIMULATION API - BASIC TEST")
@@ -176,12 +178,15 @@ class SimulationTester:
 
             self.start_simulation()
 
-            is_running = True
-            while is_running:
-                print(f"current time: {self.get_status().json().get('current_time')}")
-                for drone in self.get_all_drones().json().get("drones"):
-                    print(f"{drone.get('id')} -> {drone.get('position')} -- History: ({drone.get('trajectory')})")
-                is_running = self.get_status().json().get('running')
+            with open(export_file, "w+") as f:
+                csv_writer = csv.writer(f)
+                is_running = True
+                while is_running:
+                    print(f"current time: {self.get_status().json().get('current_time')}")
+                    for drone in self.get_all_drones().json().get("drones"):
+                        csv_writer.writerow([drone.get('id'), drone.get('position')])
+                        print(f"{drone.get('id')} -> {drone.get('position')} -- History: ({drone.get('trajectory')})")
+                    is_running = self.get_status().json().get('running')
 
         except Exception as e:
             print(f"\n❌ Test failed: {e}")
@@ -197,6 +202,8 @@ def main():
                        help='Base URL of the API server (default: http://localhost:5001)')
     parser.add_argument('--config', type=str, default='server_tester_config.yaml',
                        help='Config file name (default: server_tester_config.yaml)')
+    parser.add_argument('--export', type=str, default='server_tester_config.csv',
+                        help='Config file name (default: server_tester_config.csv)')
 
     args = parser.parse_args()
 
@@ -206,7 +213,7 @@ def main():
     # tester.run_basic_test(config_name=args.config)
 
     # simulation test starts a simple simulation and shows a little example how to use positions directly (video will follow)
-    tester.run_simulation_test(config_name=args.config)
+    tester.run_simulation_test(config_name=args.config, export_file=args.export)
 
 
 if __name__ == '__main__':
