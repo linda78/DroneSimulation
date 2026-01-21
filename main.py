@@ -10,7 +10,6 @@ import argparse
 import sys
 from pathlib import Path
 
-import api.util
 from backend import ConfigLoader, Simulation
 from gui import DroneViewer
 from gui.mesh_viewer import MeshDroneViewer
@@ -118,7 +117,7 @@ Examples:
   python main.py create-config my_config.yaml
 
   # Start API server
-  python main.py api --port 5000
+  python main.py api --port 5001
 
   # Run stress test
   python main.py run configs/stress_test.yaml --headless
@@ -145,8 +144,8 @@ Examples:
     api_parser = subparsers.add_parser('api', help='Start REST API server')
     api_parser.add_argument('--host', type=str, default='0.0.0.0',
                            help='Host address (default: 0.0.0.0)')
-    api_parser.add_argument('--port', type=int, default=5000,
-                           help='Port number (default: 5000)')
+    api_parser.add_argument('--port', type=int, default=5001,
+                           help='Port number (default: 5001)')
     api_parser.add_argument('--debug', action='store_true',
                            help='Enable debug mode')
 

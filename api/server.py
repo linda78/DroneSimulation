@@ -6,6 +6,9 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from api.resources import SimulationResource, SimulationControlResource, DronesResource, HistoryResource, StatusResource, SwaggerConfig
 from api.util.common import prefix, build_swagger_config_json
 
+import threading
+from werkzeug.serving import make_server
+
 # ============================================
 # Main
 # ============================================
@@ -60,6 +63,39 @@ api.add_resource(DronesResource, '/api/drones', '/api/drones/<int:drone_id>')
 api.add_resource(HistoryResource, '/api/history')
 api.add_resource(StatusResource, '/api/status')
 api.add_resource(SwaggerConfig, '/swagger-config')
+
+class BackgroundAPIServer:
+    """Helper to run the DroneSimulation API in a background thread using Werkzeug.
+
+    This is primarily intended for tests or integrations (e.g. BoF) that need
+    to spin up and shut down the API programmatically.
+    """
+
+    def __init__(self, host: str = "localhost", port: int = 5001):
+        self.host = host
+        self.port = port
+        self._server = make_server(self.host, self.port, app)
+        self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
+
+    def start(self):
+        """Start the API server in a background thread."""
+        self._thread.start()
+
+    def shutdown(self, timeout: float = 5.0):
+        """Shut down the API server and wait for the thread to finish."""
+        try:
+            self._server.shutdown()
+        except Exception:
+            # Best-effort shutdown; Fehler hier sollen den Testrunner nicht killen
+            pass
+
+        if self._thread.is_alive():
+            self._thread.join(timeout=timeout)
+
+
+def create_background_server(host: str = "localhost", port: int = 5001) -> BackgroundAPIServer:
+    """Convenience factory used by external projects (e.g. BoF) to start the API."""
+    return BackgroundAPIServer(host=host, port=port)
 
 if __name__ == '__main__':
     app.run(debug=True)

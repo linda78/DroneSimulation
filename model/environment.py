@@ -3,9 +3,8 @@ Environment and room models for the simulation
 """
 
 import numpy as np
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 from PIL import Image
-import cv2
 
 
 class Room:
@@ -53,12 +52,15 @@ class Room:
     def _load_video(self):
         """Initialize video capture"""
         try:
+            # late import, to only import cv2 if it is really needed.
+            import cv2
+
             self.video_capture = cv2.VideoCapture(self.texture_path)
             if self.video_capture.isOpened():
                 ret, frame = self.video_capture.read()
                 if ret:
                     self.current_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        except Exception as e:
+        except Union[ImportError, Exception] as e:
             print(f"Warning: Could not load video {self.texture_path}: {e}")
             self.video_capture = None
 
